@@ -1,7 +1,11 @@
+from rpi_rf import RFDevice
+import RPi.GPIO as gpio
+
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
+button_Position = []
 
 class MyWindow(Gtk.Window):
     def __init__(self):
@@ -69,26 +73,38 @@ class MyWindow(Gtk.Window):
         # adding the base grid to the window
         self.add(self.grid)
 
+    # function to save the state of clicked buttons  
+
+    def get_Bttn_position(self, Bttn_Number):
+        self.button_Position.append(Bttn_Number)
+        print(self.button_Position)
+
     # functions to add the selected commands to the input box
     def on_leftBttn_clicked(self, widget):
         self.inputBox.add(Gtk.Image
                           .new_from_file("assets/turn-left-arrow.png"))
         self.grid.show_all()
+        self.get_Bttn_position(0)
 
     def on_rightBttn_clicked(self, widget):
         self.inputBox.add(Gtk.Image
                           .new_from_file("assets/turn-right-arrow.png"))
         self.grid.show_all()
+        self.get_Bttn_position(1)
+
 
     def on_forwardBttn_clicked(self, widget):
         self.inputBox.add(Gtk.Image
                           .new_from_file("assets/forward-arrow.png"))
         self.grid.show_all()
+        self.get_Bttn_position(2)
+
 
     def on_uTurnBttn_clicked(self, widget):
         self.inputBox.add(Gtk.Image
                           .new_from_file("assets/u-turn-arrow.png"))
         self.grid.show_all()
+        self.get_Bttn_position(3)
 
     # function to display a message when start button is pressed
     # in the future, this might be used to stream data to the car bot
@@ -96,7 +112,16 @@ class MyWindow(Gtk.Window):
         self.startDialog = Gtk.MessageDialog()
         self.startDialog.set_markup("Acelerando...")
         self.startDialog.show()
+        self.get_Bttn_position(4)
 
+gpio.setmode(gpio.BCM)
+
+rfDevice = RFDevice(20)
+rfDevice.enable_tx()
+rfDevice.tx_repeat = 10
+
+rfDevice.tx_code(button_Position)
+rfDevice.cleanup()
 
 win = MyWindow()
 win.connect("destroy", Gtk.main_quit)
