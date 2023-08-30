@@ -116,7 +116,7 @@ class MyWindow(Gtk.Window):
 
 gpio.setmode(gpio.BCM)
 
-rfDevice = RFDevice(20)
+rfDevice = RFDevice(4)
 rfDevice.enable_tx()
 rfDevice.tx_repeat = 10
 
