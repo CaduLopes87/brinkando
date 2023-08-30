@@ -106,22 +106,23 @@ class MyWindow(Gtk.Window):
         self.grid.show_all()
         self.get_Bttn_position(3)
 
+    #Function to stream data to the car bot
+    def send_message():
+        gpio.setmode(gpio.BCM)
+
+        rfDeviceTx = RFDevice(4)
+        rfDeviceTx.enable_tx()
+        rfDeviceTx.tx_repeat = 10
+
+        rfDeviceTx.tx_code(button_Position)
+        rfDeviceTx.cleanup()
+
     # function to display a message when start button is pressed
-    # in the future, this might be used to stream data to the car bot
     def on_startBttn_clicked(self, widget):
         self.startDialog = Gtk.MessageDialog()
         self.startDialog.set_markup("Acelerando...")
         self.startDialog.show()
         self.get_Bttn_position(4)
-
-gpio.setmode(gpio.BCM)
-
-rfDevice = RFDevice(4)
-rfDevice.enable_tx()
-rfDevice.tx_repeat = 10
-
-rfDevice.tx_code(button_Position)
-rfDevice.cleanup()
 
 win = MyWindow()
 win.connect("destroy", Gtk.main_quit)
