@@ -5,8 +5,6 @@ import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
-button_Position = []
-
 class MyWindow(Gtk.Window):
     def __init__(self):
         super().__init__(title="BrinkAnDo v0.0.3")
@@ -73,7 +71,8 @@ class MyWindow(Gtk.Window):
         # adding the base grid to the window
         self.add(self.grid)
     
-    # function to save the state of clicked buttons  
+    # function to save the state of clicked buttons
+    button_Position = []  
 
     def get_Bttn_position(self, Bttn_Number):
         self.button_Position.append(Bttn_Number)
@@ -114,9 +113,9 @@ class MyWindow(Gtk.Window):
         self.rfDeviceTx.enable_tx()
         self.rfDeviceTx.tx_repeat = 10
 
-        self.rfDeviceTx.tx_code(button_Position)
+        self.rfDeviceTx.tx_code(self.button_Position)
         self.rfDeviceTx.cleanup()
-        
+
     # function to display a message when start button is pressed
     def on_startBttn_clicked(self, widget):
         self.startDialog = Gtk.MessageDialog()
