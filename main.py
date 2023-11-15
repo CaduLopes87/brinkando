@@ -1,14 +1,27 @@
-from rpi_rf import RFDevice
 import RPi.GPIO as gpio
+import serial
 
 import gi
 gi.require_version("Gtk", "3.0")
 from gi.repository import Gtk
 
+# serial port data to comunicate with arduino
+arduino = None
+serial_port = '/dev/ttyUSB0'
+baud_rate = 9600
+
+# connect to arduino
+arduino = serial.Serial(serial_port, baud_rate)
+
 class MyWindow(Gtk.Window):
     def __init__(self):
         super().__init__(title="BrinkAnDo v0.0.3")
         self.set_default_size(1280, 720)
+        
+        # serial port datas to comunicate with arduino
+        #self.arduino = None
+        #self.serial_port = '/dev/ttyUSB0'
+        #self.baud_rate = 9600
 
         # base grid for layout
         self.grid = Gtk.Grid.new()
@@ -83,47 +96,73 @@ class MyWindow(Gtk.Window):
         self.inputBox.add(Gtk.Image
                           .new_from_file("assets/turn-left-arrow.png"))
         self.grid.show_all()
-        self.get_Bttn_position(0)
+        # pass 1 for left direction
+        self.get_Bttn_position(1) 
 
     def on_rightBttn_clicked(self, widget):
         self.inputBox.add(Gtk.Image
                           .new_from_file("assets/turn-right-arrow.png"))
         self.grid.show_all()
-        self.get_Bttn_position(1)
+        # pass 2 for right direction
+        self.get_Bttn_position(2)
 
 
     def on_forwardBttn_clicked(self, widget):
         self.inputBox.add(Gtk.Image
                           .new_from_file("assets/forward-arrow.png"))
         self.grid.show_all()
-        self.get_Bttn_position(2)
+        # pass 3 for forward direction
+        self.get_Bttn_position(3)
 
 
     def on_uTurnBttn_clicked(self, widget):
         self.inputBox.add(Gtk.Image
                           .new_from_file("assets/u-turn-arrow.png"))
         self.grid.show_all()
-        self.get_Bttn_position(3)
-
+        # pass 4 for turn direction
+        self.get_Bttn_position(4)
+        
+    #Function to close connection
+    def close_connection(self):
+        if self.arduino:
+            self.arduino.close()
+    
+    #Function to convert the numbers array in a string
+    def convert_to_byte(self, num_array):
+        byte_numbers = []
+        
+        for number in num_array:
+            byte_value = number.to_bytes(1, byteorder='big')
+            byte_numbers.append(byte_value)
+        
+        return byte_numbers
+        
     #Function to stream data to the car bot
     def send_message(self):
-        self.rfDeviceTx = RFDevice(4)
-        self.rfDeviceTx.enable_tx()
-        self.rfDeviceTx.tx_repeat = 10
-
-        message = self.button_Position
-        for bit in message:
-            self.rfDeviceTx.tx_code(bit)
-            self.rfDeviceTx.cleanup()
-
+        message = self.convert_to_byte(self.button_Position)
+        
+        for byte in message:
+            if arduino:
+                try:
+                    #message = self.button_Position
+                    #message = b'1'
+                    #arduino.write(b'1')
+                    arduino.write(byte)
+                    print("Sent Byte: ", byte)
+                except serial.SerialException as e:
+                    print(f"Fail to send mesage: {e}")
+                    
+        print('Mensagem enviada: ', self.button_Position)
+        self.button_Position = []
+        
     # function to display a message when start button is pressed
     def on_startBttn_clicked(self, widget):
         self.startDialog = Gtk.MessageDialog()
         self.startDialog.set_markup("Acelerando...")
         self.startDialog.show()
-        self.get_Bttn_position(4)
+        # pass 5 to start move
+        self.get_Bttn_position(5)
         self.send_message()
-        print('Mensagem enviada', self.button_Position)
 
 win = MyWindow()
 win.connect("destroy", Gtk.main_quit)
